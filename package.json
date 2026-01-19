@@ -1,5 +1,5 @@
 {
-  "name": "@eji/form-hook",
+  "name": "rfhook",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.cjs",
