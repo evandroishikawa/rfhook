@@ -3,3 +3,7 @@
 
 # Node modules
 /node_modules
+
+# Logs
+*.tgz
+*.tar.gz
