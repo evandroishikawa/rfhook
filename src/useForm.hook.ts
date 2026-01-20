@@ -81,7 +81,7 @@ export function useForm<T = Record<string, unknown>>({
     submit(data)
   }
 
-  const reset = (data?: T, shouldUseInitialData: boolean = false) => {
+  const reset = (data?: T, shouldUseInitialData: boolean = true) => {
     if (!ref.current) return
 
     ref.current.reset()
