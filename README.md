@@ -473,6 +473,7 @@ pnpm run format:check  # Check code formatting
 ### Code Style
 
 This project uses:
+
 - **ESLint** for code linting with TypeScript and React support
 - **Prettier** for code formatting with these rules:
   - Single quotes
