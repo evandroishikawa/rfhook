@@ -9,6 +9,8 @@ A lightweight React hook for handling form submissions with advanced form data p
 - :wrench: **Nested Objects** - Parse nested form data with dot notation (`user.name`)
 - :clipboard: **Array Support** - Handle arrays with indexed notation (`items[0]`)
 - :floppy_disk: **Automatic Prevention** - Prevents default form submission behavior by default
+- :seedling: **Form Initialization** - Pre-populate forms with initial data or load data dynamically
+- :arrows_counterclockwise: **Smart Reset** - Reset to initial state, custom data, or clear completely
 - :money_with_wings: **Lightweight** - Zero dependencies (except React)
 - :memo: **Framework Agnostic** - Works with any form structure
 
@@ -27,6 +29,8 @@ yarn add rfhook
 ```
 
 ## Quick Start
+
+### Basic Usage
 
 ```tsx
 import React from 'react';
@@ -52,7 +56,40 @@ function LoginForm() {
     </form>
   );
 }
-      <button type="submit">Login</button>
+```
+
+### With Initial Data
+
+```tsx
+import React, { useEffect } from 'react';
+import { useForm } from 'rfhook';
+
+function EditUserForm({ userId }) {
+  const form = useForm<FormData>({
+    submit: (data) => updateUser(userId, data),
+    initialData: { name: '', email: '', phone: '' }
+  });
+
+  // Load user data and initialize form
+  useEffect(() => {
+    const loadUser = async () => {
+      if (userId) {
+        const userData = await fetchUser(userId);
+        form.initialize(userData);
+      } else {
+        form.initialize(); // Use initialData
+      }
+    };
+
+    loadUser();
+  }, [userId]);
+
+  return (
+    <form ref={form.ref} onSubmit={form.onSubmit}>
+      <input name="name" placeholder="Name" />
+      <input name="email" type="email" placeholder="Email" />
+      <input name="phone" placeholder="Phone" />
+      <button type="submit">Save</button>
     </form>
   );
 }
@@ -155,27 +192,124 @@ function TodoForm() {
 #### Parameters
 
 - `options.submit: (data: T) => void` - Callback function called when form is submitted with parsed form data
+- `options.initialData?: T` - Optional initial data to populate the form fields
 
 #### Returns
 
 - `ref: React.RefObject<HTMLFormElement>` - React ref to attach to your form element
 - `onSubmit: (event: React.FormEvent<HTMLFormElement>) => void` - Form submission handler that prevents default behavior and calls submit with parsed data
-- `reset: () => void` - Resets the form to its initial state
+- `reset: (data?: T, shouldUseInitialData?: boolean) => void` - Resets the form. If `data` is provided, sets form to that data. If `shouldUseInitialData` is true (default), falls back to initial data when no data is provided
 - `getFormData: () => T | null` - Gets current form data without triggering submission (returns null if form ref is not available)
 - `setValue: (name: string, value: string) => void` - Sets the value of a specific form field by name
+- `initialize: (data?: T) => void` - Initializes the form with provided data or falls back to initial data from options
 
-### Additional Usage Examples
+### Form Initialization Examples
+
+#### Static Initial Data
+
+```tsx
+const form = useForm<UserData>({
+  submit: (data) => saveUser(data),
+  initialData: {
+    name: 'John Doe',
+    email: 'john@example.com',
+    role: 'user'
+  }
+});
+
+// Initialize with predefined data on component mount
+useEffect(() => {
+  form.initialize(); // Uses initialData
+}, []);
+```
+
+#### Dynamic Data Loading
+
+```tsx
+function EditProfile({ userId }) {
+  const form = useForm<ProfileData>({
+    submit: (data) => updateProfile(userId, data)
+  });
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profile = await fetchProfile(userId);
+        form.initialize(profile);
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+        // Initialize with empty data or defaults
+        form.initialize({ name: '', email: '', bio: '' });
+      }
+    };
+
+    if (userId) loadProfile();
+  }, [userId]);
+
+  return (
+    <form ref={form.ref} onSubmit={form.onSubmit}>
+      <input name="name" placeholder="Full Name" />
+      <input name="email" type="email" placeholder="Email" />
+      <textarea name="bio" placeholder="Bio" />
+      <button type="submit">Save Profile</button>
+    </form>
+  );
+}
+```
+
+#### Conditional Reset Behavior
+
+```tsx
+function FormWithMultipleResets() {
+  const form = useForm<FormData>({
+    submit: (data) => console.log(data),
+    initialData: { name: 'Default Name', email: '' }
+  });
+
+  return (
+    <>
+      <form ref={form.ref} onSubmit={form.onSubmit}>
+        <input name="name" placeholder="Name" />
+        <input name="email" placeholder="Email" />
+        <button type="submit">Submit</button>
+      </form>
+
+      <div>
+        {/* Reset to initial data */}
+        <button onClick={() => form.reset()}>Reset to Defaults</button>
+
+        {/* Reset to custom data */}
+        <button onClick={() => form.reset({ name: 'Custom Name', email: 'custom@example.com' })}>
+          Reset to Custom
+        </button>
+
+        {/* Clear form completely */}
+        <button onClick={() => form.reset({}, false)}>Clear Form</button>
+      </div>
+    </>
+  );
+}
+```
 
 #### Using Form Utilities
 
 ```tsx
 function MyForm() {
   const form = useForm<FormData>({
-    submit: (data) => console.log('Submitted:', data)
+    submit: (data) => console.log('Submitted:', data),
+    initialData: { name: '', email: '', age: '' }
   });
 
   const handleReset = () => {
-    form.reset(); // Reset form to initial state
+    form.reset(); // Reset to initial data
+  };
+
+  const handleClearForm = () => {
+    form.reset({}, false); // Clear form completely
+  };
+
+  const handleResetToDefaults = () => {
+    form.reset({ name: 'Default User', email: '', age: '25' }); // Reset to specific data
   };
 
   const handlePreview = () => {
@@ -190,18 +324,27 @@ function MyForm() {
     form.setValue('name', 'John Doe');
   };
 
+  const handleLoadFromAPI = async () => {
+    const userData = await fetchUserData();
+    form.initialize(userData);
+  };
+
   return (
     <>
       <form ref={form.ref} onSubmit={form.onSubmit}>
         <input name="name" placeholder="Name" />
         <input name="email" type="email" placeholder="Email" />
+        <input name="age" type="number" placeholder="Age" />
         <button type="submit">Submit</button>
       </form>
 
       <div>
-        <button onClick={handleReset}>Reset Form</button>
+        <button onClick={handleReset}>Reset to Initial</button>
+        <button onClick={handleClearForm}>Clear Form</button>
+        <button onClick={handleResetToDefaults}>Reset to Defaults</button>
         <button onClick={handlePreview}>Preview Data</button>
         <button onClick={handlePrefill}>Prefill Form</button>
+        <button onClick={handleLoadFromAPI}>Load from API</button>
       </div>
     </>
   );
@@ -318,5 +461,22 @@ pnpm install
 # Build the package
 pnpm run build
 
+# Code quality
+pnpm run lint          # Check for linting issues
+pnpm run lint:fix      # Auto-fix linting issues
+pnpm run format        # Format code with Prettier
+pnpm run format:check  # Check code formatting
+
 # The built files will be in the `dist/` directory
 ```
+
+### Code Style
+
+This project uses:
+- **ESLint** for code linting with TypeScript and React support
+- **Prettier** for code formatting with these rules:
+  - Single quotes
+  - No semicolons
+  - Trailing commas
+  - 2-space indentation
+  - 80 character line width
