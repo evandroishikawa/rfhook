@@ -1,7 +1,7 @@
 {
   "name": "rfhook",
   "version": "1.2.0",
-  "description": "",
+  "description": "A lightweight React hook for handling form submissions with advanced form data parsing capabilities. Supports nested objects, arrays, and dot notation for complex form structures.",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "repository": {
@@ -20,8 +20,18 @@
     "prepare": "husky",
     "release": "standard-version"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "react",
+    "hook",
+    "form",
+    "typescript",
+    "form-data",
+    "nested-objects",
+    "form-handling",
+    "lightweight",
+    "react-hooks",
+    "form-submission"
+  ],
   "license": "ISC",
   "packageManager": "pnpm@10.24.0",
   "dependencies": {

@@ -428,8 +428,8 @@ interface MyFormData {
   // Define your form structure here
 }
 
-const { ref, submit } = useForm<MyFormData>({
-  handleSubmit: (data) => {
+const { ref, onSubmit } = useForm<MyFormData>({
+  submit: (data) => {
     // data is typed as MyFormData
   }
 });
